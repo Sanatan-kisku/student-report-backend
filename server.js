@@ -10,10 +10,14 @@ app.use(cors());
 app.use(express.json());
 
 // MongoDB Connection
-mongoose.connect("mongodb+srv://sanatankisku:MycAvlU36YSBbkKf@cluster0.7x9i3.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0", {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+mongoose.connect("mongodb+srv://sanatankisku:MycAvlU36YSBbkKf@cluster0.7x9i3.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+  .then(() => console.log("Connected to MongoDB"))
+  .catch((err) => console.error("MongoDB Connection Error:", err));
+
+// mongoose.connect("mongodb+srv://sanatankisku:MycAvlU36YSBbkKf@cluster0.7x9i3.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0", {
+//   useNewUrlParser: true,
+//   useUnifiedTopology: true,
+// });
 
 const studentSchema = new mongoose.Schema({
   name: String,
