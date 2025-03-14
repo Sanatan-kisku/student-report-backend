@@ -126,6 +126,7 @@ app.post("/upload", verifyToken, upload.fields([{ name: "studentInfo" }, { name:
   }
 });
 
+
 // Student Report Retrieval API
 app.post("/getReport", async (req, res) => {
   const { class: studentClass, section, rollNumber, dob } = req.body;
