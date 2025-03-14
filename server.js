@@ -10,7 +10,7 @@ app.use(cors());
 app.use(express.json());
 
 // MongoDB Connection
-mongoose.connect("mongodb://localhost:27017/reportCardDB", {
+mongoose.connect("mongodb+srv://sanatankisku:MycAvlU36YSBbkKf@cluster0.7x9i3.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0", {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
