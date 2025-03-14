@@ -49,10 +49,16 @@ app.post("/admin/login", async (req, res) => {
 // Middleware to verify Admin
 const verifyToken = (req, res, next) => {
   const token = req.headers.authorization;
+
   if (!token) return res.status(403).json({ error: "No token provided" });
 
-  jwt.verify(token.split(" ")[1], SECRET_KEY, (err, decoded) => {
-    if (err) return res.status(401).json({ error: "Unauthorized" });
+  const tokenParts = token.split(" ");
+  if (tokenParts.length !== 2 || tokenParts[0] !== "Bearer") {
+    return res.status(403).json({ error: "Invalid token format" });
+  }
+
+  jwt.verify(tokenParts[1], SECRET_KEY, (err, decoded) => {
+    if (err) return res.status(401).json({ error: "Invalid or expired token" });
     req.user = decoded;
     next();
   });
