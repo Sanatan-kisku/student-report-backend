@@ -5,19 +5,19 @@ const xlsx = require("xlsx");
 const cors = require("cors");
 const fs = require("fs");
 const path = require("path");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+const SECRET_KEY = "your_secret_key";
 
 // MongoDB Connection
 mongoose.connect("mongodb+srv://sanatankisku:MycAvlU36YSBbkKf@cluster0.7x9i3.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("MongoDB Connection Error:", err));
-
-// mongoose.connect("mongodb+srv://sanatankisku:MycAvlU36YSBbkKf@cluster0.7x9i3.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0", {
-//   useNewUrlParser: true,
-//   useUnifiedTopology: true,
-// });
 
 const studentSchema = new mongoose.Schema({
   name: String,
@@ -30,6 +30,34 @@ const studentSchema = new mongoose.Schema({
 
 const Student = mongoose.model("Student", studentSchema);
 
+// Dummy admin credentials
+const adminCredentials = {
+  username: "admin",
+  password: bcrypt.hashSync("password123", 10),
+};
+
+// Admin Login API
+app.post("/admin/login", async (req, res) => {
+  const { username, password } = req.body;
+  if (username !== adminCredentials.username || !bcrypt.compareSync(password, adminCredentials.password)) {
+    return res.status(401).json({ error: "Invalid credentials" });
+  }
+  const token = jwt.sign({ username }, SECRET_KEY, { expiresIn: "2h" });
+  res.json({ token });
+});
+
+// Middleware to verify Admin
+const verifyToken = (req, res, next) => {
+  const token = req.headers.authorization;
+  if (!token) return res.status(403).json({ error: "No token provided" });
+
+  jwt.verify(token.split(" ")[1], SECRET_KEY, (err, decoded) => {
+    if (err) return res.status(401).json({ error: "Unauthorized" });
+    req.user = decoded;
+    next();
+  });
+};
+
 // Multer Storage for File Uploads
 const storage = multer.diskStorage({
   destination: "uploads/",
@@ -40,7 +68,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // Admin Upload API for Student Information & Academic Records
-app.post("/upload", upload.fields([{ name: "studentInfo" }, { name: "academicProgress" }]), async (req, res) => {
+app.post("/upload", verifyToken, upload.fields([{ name: "studentInfo" }, { name: "academicProgress" }]), async (req, res) => {
   try {
     if (!req.files || !req.files["studentInfo"] || !req.files["academicProgress"]) {
       return res.status(400).send("Both files are required");
