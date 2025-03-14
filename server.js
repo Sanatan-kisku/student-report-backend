@@ -86,6 +86,13 @@ app.post("/upload", verifyToken, upload.fields([{ name: "studentInfo" }, { name:
     const academicSheet = academicWorkbook.Sheets[academicWorkbook.SheetNames[0]];
     const academicData = xlsx.utils.sheet_to_json(academicSheet);
 
+    // Delete existing records for the same class and section before inserting new data
+    const className = studentData[0]?.Class;
+    const sectionName = studentData[0]?.Section;
+    if (className && sectionName) {
+      await Student.deleteMany({ class: className, section: sectionName });
+    }
+
     // Process Data & Store in MongoDB
     for (let student of studentData) {
       let academicRecord = academicData.find((rec) =>
@@ -108,6 +115,7 @@ app.post("/upload", verifyToken, upload.fields([{ name: "studentInfo" }, { name:
 
     res.send("Files uploaded and processed successfully");
   } catch (error) {
+    console.error("Error processing files:", error);
     res.status(500).send("Error processing files");
   }
 });
