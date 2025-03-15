@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const multer = require("multer");
 const mongoose = require("mongoose");
@@ -12,10 +13,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const SECRET_KEY = "your_secret_key";
+const SECRET_KEY = process.env.SECRET_KEY;
 
 // MongoDB Connection
-mongoose.connect("mongodb+srv://sanatankisku:MycAvlU36YSBbkKf@cluster0.7x9i3.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("MongoDB Connection Error:", err));
 
@@ -32,8 +33,8 @@ const Student = mongoose.model("Student", studentSchema);
 
 // Dummy admin credentials
 const adminCredentials = {
-  username: "admin",
-  password: bcrypt.hashSync("password123", 10),
+  username: process.env.ADMIN_USERNAME,
+  password: bcrypt.hashSync(process.env.ADMIN_PASSWORD, 10),
 };
 
 // Admin Login API
