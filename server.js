@@ -137,5 +137,9 @@ app.post("/getReport", async (req, res) => {
   res.json(student.academicRecords);
 });
 
+app.get("/", (req, res) => {
+  res.send("Server is running...");
+});
+
 // Start Server
 app.listen(5000, () => console.log("Server running on port 5000"));
