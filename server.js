@@ -10,7 +10,14 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 const app = express();
-app.use(cors());
+
+const corsOptions = {
+  origin: "https://oavsuradareport.netlify.app", // Allow frontend domain
+  methods: "GET,POST,PUT,DELETE",
+  allowedHeaders: "Content-Type,Authorization",
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 const SECRET_KEY = process.env.SECRET_KEY;
@@ -38,6 +45,8 @@ const adminCredentials = {
   username: process.env.ADMIN_USERNAME,
   password: bcrypt.hashSync(process.env.ADMIN_PASSWORD, 10),
 };
+
+app.options("*", cors(corsOptions)); // Handle preflight requests
 
 // Admin Login API
 app.post("/admin/login", async (req, res) => {
