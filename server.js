@@ -29,6 +29,8 @@ const studentSchema = new mongoose.Schema({
   academicRecords: Object,
 });
 
+studentSchema.index({ class: 1, section: 1, rollNumber: 1, dob: 1 });
+
 const Student = mongoose.model("Student", studentSchema);
 
 // Dummy admin credentials
@@ -129,14 +131,29 @@ app.post("/upload", verifyToken, upload.fields([{ name: "studentInfo" }, { name:
 
 
 // Student Report Retrieval API
+// app.post("/getReport", async (req, res) => {
+//   const { class: studentClass, section, rollNumber, dob } = req.body;
+//   const student = await Student.findOne({ class: studentClass, section, rollNumber, dob });
+
+//   if (!student) return res.status(404).send("Student not found");
+
+//   res.json(student.academicRecords);
+// });
+
 app.post("/getReport", async (req, res) => {
   const { class: studentClass, section, rollNumber, dob } = req.body;
-  const student = await Student.findOne({ class: studentClass, section, rollNumber, dob });
+
+  // Fetch only required fields
+  const student = await Student.findOne(
+    { class: studentClass, section, rollNumber, dob },
+    { academicRecords: 1, _id: 0 } // ✅ Fetch only "academicRecords"
+  );
 
   if (!student) return res.status(404).send("Student not found");
 
   res.json(student.academicRecords);
 });
+
 
 app.get("/", (req, res) => {
   res.send("Server is running...");
