@@ -172,11 +172,11 @@ app.post("/upload", verifyToken, upload.fields([{ name: "studentInfo" }, { name:
     const academicData = xlsx.utils.sheet_to_json(academicSheet);
 
     for (let student of studentData) {
-      const className = student.CLASS; // Get class name
+      const className = student.Class; // Get class name
       const StudentModel = getStudentModel(className); // Get class-wise model
 
       let academicRecord = academicData.find((rec) =>
-        rec["ROLL NO"] == student.Roll && rec["SECTION"] == student.Section
+        rec["Roll No."] == student.Roll && rec["Section"] == student.Section
       );
 
       await StudentModel.updateOne(
