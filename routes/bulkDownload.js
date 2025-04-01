@@ -3,16 +3,17 @@ const mongoose = require("mongoose");
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
 const path = require("path");
-const Student = require("../models/Student"); // Ensure correct model import
+const { getStudentModel } = require("../server"); // Import the dynamic model function
 
 const router = express.Router();
 
 // Route to bulk download student report cards as a single PDF
 router.get("/bulkDownload/:class/:section", async (req, res) => {
   const { class: studentClass, section } = req.params;
+  const Student = getStudentModel(studentClass); // Dynamically get the Student model
 
   try {
-    const students = await Student.find({ class: studentClass, section });
+    const students = await Student.find({ section });
 
     if (students.length === 0) {
       return res.status(404).json({ message: "No students found!" });
@@ -20,7 +21,6 @@ router.get("/bulkDownload/:class/:section", async (req, res) => {
 
     const pdfPath = path.join(__dirname, `Class_${studentClass}_Section_${section}_Report.pdf`);
     const doc = new PDFDocument({ margin: 30 });
-
     const stream = fs.createWriteStream(pdfPath);
     doc.pipe(stream);
 
@@ -35,19 +35,13 @@ router.get("/bulkDownload/:class/:section", async (req, res) => {
       // 🔹 Student Information
       doc.fontSize(14).text(`Name: ${student.name}`);
       doc.text(`Roll No: ${student.rollNumber}`);
-      doc.text(`Class: ${student.class}`);
+      doc.text(`Class: ${studentClass}`);
       doc.text(`Section: ${student.section}`);
       doc.moveDown();
 
       // 🔹 Marks Table
-      const tableStartY = doc.y;
-      const tableWidth = 400;
-      const colWidth = tableWidth / 7;
-
       doc.fontSize(12).text("SCHOLASTIC DETAILS", { underline: true });
       doc.moveDown(0.5);
-
-      // Table Headers
       doc.text("Subjects", 60, doc.y);
       doc.text("PT1", 200, doc.y);
       doc.text("PT2", 250, doc.y);
@@ -59,7 +53,6 @@ router.get("/bulkDownload/:class/:section", async (req, res) => {
       doc.strokeColor("black").lineWidth(1).moveTo(50, doc.y).lineTo(500, doc.y).stroke();
       doc.moveDown(0.5);
 
-      // Subject-wise Marks
       student.marks.forEach((subject) => {
         doc.text(subject.name, 60, doc.y);
         doc.text(subject.pt1.toString(), 200, doc.y);
