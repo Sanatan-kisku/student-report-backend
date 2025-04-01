@@ -17,6 +17,9 @@ const corsOptions = {
   allowedHeaders: "Content-Type,Authorization",
 };
 
+const bulkDownloadRoutes = require("./routes/bulkDownload");
+app.use("/api", bulkDownloadRoutes);
+
 app.use(cors(corsOptions));
 app.use(express.json());
 
