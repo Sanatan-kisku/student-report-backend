@@ -1,16 +1,16 @@
 const express = require("express");
 const PDFDocument = require("pdfkit");
-const getStudentModel = require("../server"); // Import getStudentModel function
+const getStudentModel = require("../server"); // Import function to get model
 
 const router = express.Router();
 
 // Route to bulk download student report cards as a single PDF
 router.get("/bulkDownload/:class/:section", async (req, res) => {
   const { class: studentClass, section } = req.params;
+  const Student = getStudentModel(); // Ensure the correct model is used
 
   try {
-    const Student = getStudentModel(`Class${studentClass}`); // Get the correct model
-    const students = await Student.find({ section });
+    const students = await Student.find({ class: studentClass, section });
 
     if (students.length === 0) {
       return res.status(404).json({ message: "No students found!" });
@@ -22,8 +22,8 @@ router.get("/bulkDownload/:class/:section", async (req, res) => {
     doc.on("data", (chunk) => buffers.push(chunk));
     doc.on("end", () => {
       const pdfData = Buffer.concat(buffers);
-      res.setHeader("Content-Disposition", `attachment; filename=Class_${studentClass}_Section_${section}_Report.pdf`);
       res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Disposition", `attachment; filename=Class_${studentClass}_Section_${section}_Report.pdf`);
       res.send(pdfData);
     });
 
@@ -34,8 +34,8 @@ router.get("/bulkDownload/:class/:section", async (req, res) => {
       doc.moveDown();
       doc.fontSize(14).text(`Name: ${student.name}`);
       doc.text(`Roll No: ${student.rollNumber}`);
-      doc.text(`Class: ${studentClass}`);
-      doc.text(`Section: ${section}`);
+      doc.text(`Class: ${student.class}`);
+      doc.text(`Section: ${student.section}`);
       doc.text(`Total Marks: ${student.totalMarks}`);
       doc.text(`Percentage: ${student.percentage}%`);
       doc.text(`Result: ${student.result}`);
