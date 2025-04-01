@@ -3,17 +3,16 @@ const mongoose = require("mongoose");
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
 const path = require("path");
-const { getStudentModel } = require("../server"); // Import the dynamic model function
+const Student = require("../models/Student"); // Correct path to the Student model
 
 const router = express.Router();
 
 // Route to bulk download student report cards as a single PDF
 router.get("/bulkDownload/:class/:section", async (req, res) => {
   const { class: studentClass, section } = req.params;
-  const Student = getStudentModel(studentClass); // Dynamically get the Student model
 
   try {
-    const students = await Student.find({ section });
+    const students = await Student.find({ class: studentClass, section });
 
     if (students.length === 0) {
       return res.status(404).json({ message: "No students found!" });
